@@ -2,7 +2,6 @@ import warnings
 import numpy as np
 import shap
 import skimage.segmentation
-from onnx_tf.backend import prepare  # onnx to tf model converter&runner
 from dianna import utils
 
 
@@ -20,6 +19,8 @@ class KernelSHAP:
                                                in the list is the axis index
         """
         self.axis_labels = axis_labels if axis_labels is not None else []
+        from onnx_tf.backend import prepare
+        self.onnx_to_tf = prepare
 
     @staticmethod
     def _segment_image(
@@ -204,7 +205,7 @@ class KernelSHAP:
             features (np.ndarray): A matrix of samples (# samples x # features)
                                    on which to explain the model's output.
         """
-        return prepare(self.onnx_model).run(
+        return self.onnx_to_tf(self.onnx_model).run(
             self._mask_image(
                 features,
                 self.image_segments,
